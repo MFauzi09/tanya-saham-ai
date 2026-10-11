@@ -1,28 +1,31 @@
 import { GoogleGenAI, type Content, type FunctionDeclaration } from "@google/genai";
 import { callTool, listTools } from "./mcp";
 import { buildSystemInstruction } from "./prompt";
-import type { ChatRequest, ChatSettings, ToolCall } from "./types";
+import { GEMINI_MODELS, type ChatRequest, type ChatSettings, type ToolCall } from "./types";
 
 const MAX_TOOL_ROUNDS = 4;
 const MEMORY_WINDOW = 20;
-const RETRY_DELAYS_MS = [1500, 4000, 8000];
+const RETRY_DELAYS_MS = [1000, 2500];
 const TRANSIENT_ERROR = /\b(503|429|500)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|overloaded|high demand|fetch failed|ECONNRESET|ETIMEDOUT/i;
+const BUSY_MESSAGE = "Server Gemini sedang sibuk. Coba kirim ulang sebentar lagi.";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const isRetired = (e: unknown) => e instanceof Error && /NOT_FOUND|no longer available/i.test(e.message);
+const isTransient = (e: unknown) => e instanceof Error && TRANSIENT_ERROR.test(e.message);
 
-async function withRetry<T>(call: () => Promise<T>): Promise<T> {
-  for (const delay of RETRY_DELAYS_MS) {
-    try {
-      return await call();
-    } catch (e) {
-      if (!(e instanceof Error) || !TRANSIENT_ERROR.test(e.message)) throw e;
-      await sleep(delay);
+async function withFallback<T>(models: string[], call: (model: string) => Promise<T>): Promise<{ result: T; model: string }> {
+  for (const model of models) {
+    for (const delay of [...RETRY_DELAYS_MS, -1]) {
+      try {
+        return { result: await call(model), model };
+      } catch (e) {
+        if (isRetired(e)) break;
+        if (!isTransient(e)) throw e;
+        if (delay >= 0) await sleep(delay);
+      }
     }
   }
-  return call().catch((e: unknown) => {
-    if (e instanceof Error && TRANSIENT_ERROR.test(e.message)) throw new Error("Server Gemini sedang sibuk. Coba kirim ulang sebentar lagi.");
-    throw e;
-  });
+  throw new Error(BUSY_MESSAGE);
 }
 
 type Keys = { gemini: string; investsaham?: string };
@@ -48,9 +51,11 @@ export async function runChat(conversation: ChatRequest["conversation"], setting
   };
 
   const usedTools: ToolCall[] = [];
+  let models = [settings.model, ...GEMINI_MODELS.filter((m) => m !== settings.model && !m.includes("pro"))];
 
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-    const response = await withRetry(() => ai.models.generateContent({ model: settings.model, contents, config }));
+    const { result: response, model } = await withFallback(models, (m) => ai.models.generateContent({ model: m, contents, config }));
+    models = [model, ...models.filter((m) => m !== model)];
     const calls = response.functionCalls ?? [];
 
     if (!calls.length || !mcpKey || round === MAX_TOOL_ROUNDS) {

@@ -22,7 +22,7 @@
 
 Alurnya: login sebagai tamu, kirim pertanyaan, buat sesi baru, ganti judul sesi, buka Setting (API key, model dan gaya, skill, embed), lalu widget di website lain. Video versi MP4 ada di [`docs/demo.mp4`](docs/demo.mp4).
 
-Di video, API key Gemini belum diisi, jadi bot menjawab dengan pesan error yang meminta key. Setelah key diisi di Setting, bot menjawab dengan data MCP InvestSaham.
+Semua jawaban di video adalah jawaban asli Gemini. Untuk BBCA, Gemini memanggil tool `get_asset_analysis` dari MCP InvestSaham. Untuk cut loss, Gemini mengutip materi ebook.
 
 ## Daftar isi
 
@@ -168,7 +168,7 @@ Key yang diisi di Setting tersimpan di localStorage browser pengguna. Key itu di
 
 | Parameter | Nilai | Efek |
 |---|---|---|
-| `model` | `gemini-2.5-flash` (default), `gemini-2.5-pro`, `gemini-2.5-flash-lite` | Kecepatan lawan kedalaman jawaban |
+| `model` | `gemini-2.5-flash` (default), `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-2.5-pro` | Kecepatan lawan kedalaman jawaban. Kalau model penuh (503), server otomatis pindah ke model Flash lain |
 | `temperature` | 0.0 - 2.0, default 0.4 | Rendah untuk analisa faktual, tinggi untuk jawaban kreatif |
 | `tone` | `formal`, `santai`, `mentor` | Gaya bahasa jawaban |
 | `level` | `pemula`, `menengah`, `trader` | Seberapa detail istilah dijelaskan |

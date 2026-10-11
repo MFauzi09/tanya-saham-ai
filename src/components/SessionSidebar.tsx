@@ -135,7 +135,7 @@ export function SessionSidebar({ sessions, activeId, user, open, onPick, onNew, 
           <AnimatePresence initial={false}>
             {visible.map((session) => {
               const active = session.id === activeId;
-              const last = session.messages.at(-1)?.text ?? "Belum ada pesan";
+              const last = session.messages.at(-1)?.text.replace(/[*_#`>|]/g, "").trim() ?? "Belum ada pesan";
               return (
                 <motion.li
                   key={session.id}
