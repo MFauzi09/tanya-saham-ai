@@ -27,7 +27,15 @@ export default function ChatApp() {
   const [pending, setPending] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [serverHasGeminiKey, setServerHasGeminiKey] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch("/api/chat")
+      .then((res) => res.json() as Promise<{ serverHasGeminiKey: boolean }>)
+      .then((data) => setServerHasGeminiKey(data.serverHasGeminiKey))
+      .catch(() => setServerHasGeminiKey(false));
+  }, []);
 
   const active = sessions.find((s) => s.id === activeId) ?? sessions[0];
   const isPending = active ? pending.has(active.id) : false;
@@ -141,7 +149,7 @@ export default function ChatApp() {
           </div>
         </header>
 
-        {!settings.geminiKey && (
+        {!settings.geminiKey && !serverHasGeminiKey && (
           <button
             onClick={() => setSettingsOpen(true)}
             className="border-b border-warn/30 bg-warn/10 px-4 py-2 text-left text-[0.8rem] text-warn hover:bg-warn/15"

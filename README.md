@@ -69,6 +69,14 @@ Project ini dibuat untuk tugas akhir kelas **AI Productivity and AI API Integrat
 
 ## Screenshot
 
+| Analisa saham dengan data live MCP | Pertanyaan konsep dari materi ebook |
+|---|---|
+| ![Jawaban BBCA](docs/screenshots/11-chat-jawaban-bbca.png) | ![Jawaban ebook](docs/screenshots/12-chat-jawaban-ebook.png) |
+
+| Widget menjawab di website lain | PDF semua halaman UI |
+|---|---|
+| ![Widget jawaban](docs/screenshots/13-widget-jawaban.png) | [docs/UI-Tanya-Saham-AI.pdf](docs/UI-Tanya-Saham-AI.pdf) |
+
 | Login | Login (dark mode) |
 |---|---|
 | ![Login](docs/screenshots/01-login.png) | ![Login dark](docs/screenshots/02-login-dark.png) |
@@ -130,7 +138,7 @@ Kamu cukup copy dua key, lalu tempel di menu **Setting > API key**.
 3. Copy API key MCP kamu.
 4. Tempel di Setting, kolom **InvestSaham MCP API key**.
 
-Tanpa key InvestSaham, bot tetap jalan. Bot hanya menjawab konsep dan tidak menyebut harga terkini.
+Tanpa key InvestSaham, atau kalau key salah, bot tetap menjawab. Bot menjelaskan cara menganalisa saham itu dari materi ebook, tidak mengarang harga terkini, lalu menyarankan isi key untuk data live.
 
 ### 3. Google Client ID (opsional, untuk tombol login Gmail)
 

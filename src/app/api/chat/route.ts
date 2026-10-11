@@ -21,6 +21,10 @@ function sanitizeSettings(input: ChatRequest["settings"]): ChatSettings {
   };
 }
 
+export function GET() {
+  return Response.json({ serverHasGeminiKey: Boolean(process.env.GEMINI_API_KEY) }, { headers: corsHeaders });
+}
+
 export function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders });
 }

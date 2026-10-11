@@ -5,20 +5,39 @@ import type { ChatRequest, ChatSettings, ToolCall } from "./types";
 
 const MAX_TOOL_ROUNDS = 4;
 const MEMORY_WINDOW = 20;
+const RETRY_DELAYS_MS = [1500, 4000, 8000];
+const TRANSIENT_ERROR = /\b(503|429|500)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|overloaded|high demand|fetch failed|ECONNRESET|ETIMEDOUT/i;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function withRetry<T>(call: () => Promise<T>): Promise<T> {
+  for (const delay of RETRY_DELAYS_MS) {
+    try {
+      return await call();
+    } catch (e) {
+      if (!(e instanceof Error) || !TRANSIENT_ERROR.test(e.message)) throw e;
+      await sleep(delay);
+    }
+  }
+  return call().catch((e: unknown) => {
+    if (e instanceof Error && TRANSIENT_ERROR.test(e.message)) throw new Error("Server Gemini sedang sibuk. Coba kirim ulang sebentar lagi.");
+    throw e;
+  });
+}
 
 type Keys = { gemini: string; investsaham?: string };
 
 export async function runChat(conversation: ChatRequest["conversation"], settings: ChatSettings, keys: Keys) {
   const ai = new GoogleGenAI({ apiKey: keys.gemini });
-  const mcpKey = settings.useMcp ? keys.investsaham : undefined;
+  const requestedMcpKey = settings.useMcp ? keys.investsaham : undefined;
+  const mcpTools = requestedMcpKey ? await listTools(requestedMcpKey).catch(() => []) : [];
+  const mcpKey = mcpTools.length ? requestedMcpKey : undefined;
 
-  const functionDeclarations: FunctionDeclaration[] = mcpKey
-    ? (await listTools(mcpKey)).map((tool) => ({
-        name: tool.name,
-        description: tool.description,
-        parametersJsonSchema: tool.inputSchema,
-      }))
-    : [];
+  const functionDeclarations: FunctionDeclaration[] = mcpTools.map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    parametersJsonSchema: tool.inputSchema,
+  }));
 
   const history = settings.memory ? conversation.slice(-MEMORY_WINDOW) : conversation.slice(-1);
   const contents: Content[] = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
@@ -31,7 +50,7 @@ export async function runChat(conversation: ChatRequest["conversation"], setting
   const usedTools: ToolCall[] = [];
 
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-    const response = await ai.models.generateContent({ model: settings.model, contents, config });
+    const response = await withRetry(() => ai.models.generateContent({ model: settings.model, contents, config }));
     const calls = response.functionCalls ?? [];
 
     if (!calls.length || !mcpKey || round === MAX_TOOL_ROUNDS) {

@@ -30,7 +30,7 @@ export async function buildSystemInstruction(settings: ChatSettings) {
     levelRules[settings.level],
     settings.useMcp
       ? "Untuk pertanyaan tentang kode saham tertentu, selalu panggil tool get_asset_analysis dulu. Untuk mencari kandidat saham, panggil ihsg_screener. Ikuti skill berikut:\n\n" + skill
-      : "Tool data pasar sedang mati. Jangan menyebut harga terkini. Jelaskan konsep saja.",
+      : "Data pasar live dari InvestSaham sedang tidak tersambung. Tetap jawab dengan lengkap: jelaskan cara menganalisa saham yang ditanya (support, resistance, tren, volume, stop loss, risk:reward) dan langkah yang bisa pengguna cek sendiri di chart. Jangan mengarang harga terkini. Di akhir jawaban, sarankan mengisi API key InvestSaham di Setting untuk analisa dengan data live.",
     settings.useEbook ? "Untuk pertanyaan konsep, pakai materi ebook berikut dan sebut babnya:\n\n" + ebook : "",
     settings.extra ? "Instruksi tambahan dari pengguna:\n" + settings.extra : "",
     "Tutup setiap analisa dengan satu baris: 'Bukan ajakan beli atau jual. Keputusan dan risiko ada di tangan kamu.'",
