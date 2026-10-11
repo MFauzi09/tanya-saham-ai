@@ -16,10 +16,17 @@
   <img alt="Framer Motion" src="https://img.shields.io/badge/Framer%20Motion-14-0055FF?logo=framer&logoColor=white">
 </p>
 
-![Halaman chat](docs/screenshots/04-chat-error-key.png)
+## Demo
+
+![Demo Tanya Saham AI](docs/demo.webp)
+
+Alurnya: login sebagai tamu, kirim pertanyaan, buat sesi baru, ganti judul sesi, buka Setting (API key, model dan gaya, skill, embed), lalu widget di website lain. Video versi MP4 ada di [`docs/demo.mp4`](docs/demo.mp4).
+
+Di video, API key Gemini belum diisi, jadi bot menjawab dengan pesan error yang meminta key. Setelah key diisi di Setting, bot menjawab dengan data MCP InvestSaham.
 
 ## Daftar isi
 
+- [Demo](#demo)
 - [Use case](#use-case)
 - [Fitur](#fitur)
 - [Screenshot](#screenshot)

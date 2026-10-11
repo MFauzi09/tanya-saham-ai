@@ -20,5 +20,5 @@ export async function askAssistant(messages: Message[], settings?: Settings | Ch
 const TICKER = /\b[A-Z]{4}\b/;
 
 export function sessionCodeFrom(text: string) {
-  return text.toUpperCase().match(TICKER)?.[0] ?? "";
+  return text.match(TICKER)?.[0] ?? "";
 }
